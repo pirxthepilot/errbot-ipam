@@ -1,0 +1,9 @@
+[Core]
+Name = Ipam
+Module = ipam
+
+[Python]
+Version = 2+
+
+[Documentation]
+Description = IPAM plugin
