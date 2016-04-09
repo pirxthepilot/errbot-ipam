@@ -2,38 +2,85 @@ from errbot import BotPlugin, botcmd
 from errbot.rendering import text
 from phpipam import PhpIpam
 import json
+import re
 
 # Vars
 ipam_baseurl = 'http://localhost:8080'
 ipam_id = 'botbot'
 ipam_user = 'errbot'
 ipam_pw = 'oopsie123'
+ipam_sectionid = 1
 
 
 class Ipam(BotPlugin):
     """phpipam plugin for Errbot"""
 
     @botcmd
-    def ipam(self, msg, ipaddress):
-        """Check IPAM for IP Address"""
+    def ipam(self, msg, address):
+        """Query IPAM for IP or network address"""
         ipam_sess = PhpIpam(ipam_baseurl, ipam_id, ipam_user, ipam_pw)
         ipam_sess.connect()
-        query = ipam_sess.get_address_info(ipaddress)
-        ipam_sess.close()
-        if query:
-            return self.output(json.loads(query)['data'][0])
-        else:
-            return "IP address not found."
+        netaddr_re = re.compile("[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\/[0-9]+")
 
-    def output(self, data):
+        # Subnet query
+        if netaddr_re.match(address):
+            info = ipam_sess.get_subnet_info(address)
+            usage = ipam_sess.get_subnet_usage(address)
+            first = ipam_sess.get_subnet_firstfree(address)
+            query = {}
+            if info and usage and first:
+                query.update(json.loads(info)['data'])
+                query.update(json.loads(usage)['data'])
+                query.update(json.loads(first)['data'])
+                return self.output_subnet(query)
+            else:
+                return "IPAM says: No result or query error"
+
+        # IP address query
+        else:
+            query = ipam_sess.get_address_info(address)
+            if query:
+                return self.output_ip(json.loads(query)['data'][0])
+            else:
+                return "IPAM says: No result or invalid query"
+
+        ipam_sess.close()
+
+    def output_ip(self, data):
+        url = ("%s/?page=subnets&section=%s"
+               "&subnetId=%s&sPage=address-details&ipaddrid=%s"
+               % (ipam_baseurl, ipam_sectionid, data['subnetId'], data['id']))
         message = ("IPAM says:\n"
                    " ========== \n"
                    "[ip address] %s\n"
                    "[hostname] %s\n"
                    "[description] %s\n"
+                   "[link] %s\n"
                    " ========== \n"
                    % (data['ip'],
                       data['hostname'],
-                      data['description']))
+                      data['description'],
+                      url))
+        md = text()
+        return md.convert(message)
+
+    def output_subnet(self, data):
+        url = ("%s/?page=subnets&section=%s&subnetId=%s"
+               % (ipam_baseurl, data['sectionId'], data['id']))
+        message = ("IPAM says:\n"
+                   " ========== \n"
+                   "[subnet] %s/%s\n"
+                   "[description] %s\n"
+                   "[used] %s/%s\n"
+                   "[first free ip] %s\n"
+                   "[link] %s\n"
+                   " ========== \n"
+                   % (data['subnet'],
+                      data['mask'],
+                      data['description'],
+                      data['used'],
+                      data['maxhosts'],
+                      data['first_free'],
+                      url))
         md = text()
         return md.convert(message)
