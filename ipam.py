@@ -1,4 +1,5 @@
 from errbot import BotPlugin, botcmd
+from errbot.rendering import text
 from phpipam import PhpIpam
 import json
 
@@ -20,6 +21,19 @@ class Ipam(BotPlugin):
         query = ipam_sess.get_address_info(ipaddress)
         ipam_sess.close()
         if query:
-            return str(query)
+            return self.output(json.loads(query)['data'][0])
         else:
             return "IP address not found."
+
+    def output(self, data):
+        message = ("IPAM says:\n"
+                   " ========== \n"
+                   "[ip address] %s\n"
+                   "[hostname] %s\n"
+                   "[description] %s\n"
+                   " ========== \n"
+                   % (data['ip'],
+                      data['hostname'],
+                      data['description']))
+        md = text()
+        return md.convert(message)
