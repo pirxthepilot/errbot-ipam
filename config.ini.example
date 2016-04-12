@@ -1,0 +1,6 @@
+[phpipam]
+baseurl = http://localhost:8080
+id = errbot
+user = errbot
+password = oops
+sectionid = 1

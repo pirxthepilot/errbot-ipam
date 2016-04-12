@@ -1,15 +1,22 @@
 from errbot import BotPlugin, botcmd
 from errbot.rendering import text
 from phpipam import PhpIpam
+from ConfigParser import SafeConfigParser
 import json
 import re
+import os
 
-# Vars
-ipam_baseurl = 'http://localhost:8080'
-ipam_id = 'botbot'
-ipam_user = 'errbot'
-ipam_pw = 'oopsie123'
-ipam_sectionid = 1
+# Config file
+cwd = os.path.dirname(os.path.realpath(__file__))
+config = SafeConfigParser()
+config.read(os.path.join(cwd, 'config.ini'))
+
+# Config variables
+ipam_baseurl = config.get('phpipam', 'baseurl')
+ipam_id = config.get('phpipam', 'id')
+ipam_user = config.get('phpipam', 'user')
+ipam_pw = config.get('phpipam', 'password')
+ipam_sectionid = config.get('phpipam', 'sectionid')
 
 
 class Ipam(BotPlugin):
