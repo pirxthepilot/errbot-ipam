@@ -17,6 +17,10 @@ ipam_id = config.get('phpipam', 'id')
 ipam_user = config.get('phpipam', 'user')
 ipam_pw = config.get('phpipam', 'password')
 ipam_sectionid = config.get('phpipam', 'sectionid')
+if config.has_option('phpipam', 'ca_cert'):
+    ca_cert = config.get('phpipam', 'ca_cert')
+else:
+    ca_cert = None
 
 
 class Ipam(BotPlugin):
@@ -25,7 +29,7 @@ class Ipam(BotPlugin):
     @botcmd
     def ipam(self, msg, address):
         """Query IPAM for IP or network address"""
-        ipam_sess = PhpIpam(ipam_baseurl, ipam_id, ipam_user, ipam_pw)
+        ipam_sess = PhpIpam(ipam_baseurl, ipam_id, ipam_user, ipam_pw, ca_cert)
         ipam_sess.connect()
         netaddr_re = re.compile("[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\/[0-9]+")
 
