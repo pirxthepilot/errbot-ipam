@@ -66,11 +66,13 @@ class Ipam(BotPlugin):
                    "[ip address] %s\n"
                    "[hostname] %s\n"
                    "[description] %s\n"
+                   "[owner] %s\n"
                    "[link] %s\n"
                    " ========== \n"
                    % (data['ip'],
                       data['hostname'],
                       data['description'],
+                      data['owner'],
                       url))
         md = text()
         return md.convert(message)
