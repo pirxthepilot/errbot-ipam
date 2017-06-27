@@ -2,3 +2,4 @@
 *.swp
 *.ini
 phpipam/
+__pycache__/

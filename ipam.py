@@ -1,7 +1,9 @@
+from __future__ import absolute_import, division, print_function
+
 from errbot import BotPlugin, botcmd
 from errbot.rendering import text
 from phpipam import PhpIpam
-from ConfigParser import SafeConfigParser
+from configparser import SafeConfigParser
 import json
 import re
 import os
